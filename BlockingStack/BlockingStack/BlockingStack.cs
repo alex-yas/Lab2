@@ -47,6 +47,7 @@ namespace BlockingStack
                 Node<T> temp = head;
                 head = head.Next;
                 count--;
+                mtx.ReleaseMutex();
                 return temp.Data;
             }
             public T Peek()
@@ -71,4 +72,12 @@ namespace BlockingStack
                 }
             }
         }
+
+    class BlockingStack
+    {
+        public static void main()
+        {
+            
+        }
+    }
 }
