@@ -18,6 +18,7 @@ namespace BlockingStack
             Node<T> head;
             int count;
             public static Mutex mtx = new Mutex();
+            private object loc = new object();
             public bool IsEmpty()
             {
                 mtx.WaitOne();
@@ -75,7 +76,7 @@ namespace BlockingStack
 
     class BlockingStack
     {
-        public static void main()
+        public static void Main()
         {
             
         }
