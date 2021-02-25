@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BlockingStack
 {
     public class Node<T>
-    {
-        public Node(T data)
+    { public Node(T data)
         {
             Data = data;
         }
@@ -17,28 +17,34 @@ namespace BlockingStack
         {
             Node<T> head;
             int count;
- 
-            public bool IsEmpty
+            public static Mutex mtx = new Mutex();
+            public bool IsEmpty()
             {
-                get { return count == 0; }
+                mtx.WaitOne();
+                mtx.ReleaseMutex();
+                return count == 0;
             }
-            public int Count
+            public int Count()
             {
-                get { return count; }
+                mtx.WaitOne();
+                mtx.ReleaseMutex();
+                return count;
             }
- 
             public void Push(T item)
             {
+                mtx.WaitOne();
                 // увеличиваем стек
                 Node<T> node = new Node<T>(item);
                 node.Next = head; // переустанавливаем верхушку стека на новый элемент
                 head = node;
                 count++;
+                mtx.ReleaseMutex();
             }
             public T Pop()
             {
+                mtx.WaitOne();
                 // если стек пуст, выбрасываем исключение
-                if (IsEmpty)
+                if (IsEmpty())
                     throw new InvalidOperationException("Стек пуст");
                 Node<T> temp = head;
                 head = head.Next; // переустанавливаем верхушку стека на следующий элемент
@@ -47,16 +53,16 @@ namespace BlockingStack
             }
             public T Peek()
             {
-                if (IsEmpty)
+                mtx.WaitOne();
+                if (IsEmpty())
                     throw new InvalidOperationException("Стек пуст");
+                mtx.ReleaseMutex();
                 return head.Data;
             }
- 
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return ((IEnumerable)this).GetEnumerator();
             }
- 
             IEnumerator<T> IEnumerable<T>.GetEnumerator()
             {
                 Node<T> current = head;
@@ -67,30 +73,4 @@ namespace BlockingStack
                 }
             }
         }
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            NodeStack<string> stack = new NodeStack<string>();
-            stack.Push("Tom");
-            stack.Push("Alice");
-            stack.Push("Bob");
-            stack.Push("Kate");
- 
-            foreach (var item in stack)
-            {
-                Console.WriteLine(item);
-            }
-            Console.WriteLine();
-            string header = stack.Peek();
-            Console.WriteLine($"Верхушка стека: {header}");
-            Console.WriteLine();
- 
-            header = stack.Pop();
-            foreach (var item in stack)
-            {
-                Console.WriteLine(item);
-            }
-        }
-    }
 }
