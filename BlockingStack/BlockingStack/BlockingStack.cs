@@ -33,9 +33,8 @@ namespace BlockingStack
             public void Push(T item)
             {
                 mtx.WaitOne();
-                // увеличиваем стек
                 Node<T> node = new Node<T>(item);
-                node.Next = head; // переустанавливаем верхушку стека на новый элемент
+                node.Next = head;
                 head = node;
                 count++;
                 mtx.ReleaseMutex();
@@ -43,11 +42,10 @@ namespace BlockingStack
             public T Pop()
             {
                 mtx.WaitOne();
-                // если стек пуст, выбрасываем исключение
                 if (IsEmpty())
                     throw new InvalidOperationException("Стек пуст");
                 Node<T> temp = head;
-                head = head.Next; // переустанавливаем верхушку стека на следующий элемент
+                head = head.Next;
                 count--;
                 return temp.Data;
             }
