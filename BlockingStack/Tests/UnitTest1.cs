@@ -66,39 +66,25 @@ namespace NUnitTests
         {
             NodeStack<int> stack = GenerateStack(1, 1);
 
-            int[] peeks = new int[2];
-            Thread t1 = new Thread( ()=> { 
-                for (int i = 0; i < 2; i++)
-                {
-                    peeks[i] = stack.Peek();
-                    if(i == 0)
-                        Thread.Sleep(500);
-                }
+            int peek=10001;
+            Thread t1 = new Thread( ()=> {
+                peek = stack.Peek();
             });
             Thread t2 = new Thread(delegate () { stack.Push(10001);});
-
-            t1.Start();
             t2.Start();
-
+            t1.Start();
+            
             t1.Join();
             t2.Join();
-
-            Assert.False(peeks[0]==peeks[1]);
+            Assert.AreEqual(peek,stack.Peek());
         }
 
        [Test]
-        public void IsEmptyFunction_OneThreadChecksIsStackIsEmpty_StackIsEmpty()
+        public void IsEmptyFunction_OneThreadPushAnotherPop_StackIsEmpty()
         {
             NodeStack<int> stack = new NodeStack<int>();
-
-            bool emptiness= true;
-            Thread t1 = new Thread(()=> { 
-                stack.Push(10001);
-                emptiness = false;
-                Thread.Sleep(10);
-                emptiness = stack.IsEmpty();
-            });
-
+            
+            Thread t1 = new Thread(()=> { stack.Push(10001); });
             Thread t2 = new Thread(delegate () { stack.Pop(); });
             t1.Start();
             t2.Start();
@@ -106,7 +92,27 @@ namespace NUnitTests
             t1.Join();
             t2.Join();
 
-            Assert.True(emptiness);
+            Assert.True( stack.IsEmpty());
+        }
+        [Test]
+        public void ContainsFunction_OneThreadChecksIsStackIsEmpty_StackIsEmpty()
+        {
+            NodeStack<int> stack = new NodeStack<int>();
+            
+            Thread t1 = new Thread(() =>
+            {
+                stack.Push(10001);
+                stack.Push(1);
+                stack.Push(2);
+            });
+            Thread t2 = new Thread(delegate () { stack.Pop(); });
+            t1.Start();
+            t2.Start();
+
+            t1.Join();
+            t2.Join();
+            Node<int> element;
+            Assert.False( stack.Contains(2,out element));
         }
     }
 }
